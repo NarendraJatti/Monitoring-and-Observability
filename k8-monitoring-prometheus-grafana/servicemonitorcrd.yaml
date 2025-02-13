@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: my-service-monitor
+  labels:
+    team: dev
+spec:
+  selector:
+    matchLabels:
+      app: my-app           # This matches services with the app label "my-app"
+  endpoints:
+  - port: web               # This specifies which port of the service should be scraped
+    path: /metrics          # Path where metrics are exposed
+    interval: 30s           # Scrape interval (optional)
+    timeout: 10s            # Scrape timeout (optional)

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodejs-app-code
+data:
+  server.js: |
+    const express = require('express');
+    const promClient = require('prom-client');
+    const app = express();
+    const port = 8080;
+
+    // Create a counter metric
+    const requestCounter = new promClient.Counter({
+      name: 'http_requests_total',
+      help: 'Total number of HTTP requests',
+      labelNames: ['method', 'status'],
+    });
+
+    // Expose metrics at /metrics
+    app.get('/metrics', async (req, res) => {
+      res.set('Content-Type', promClient.register.contentType);
+      res.end(await promClient.register.metrics());
+    });
+
+    // Basic request handling to increment the counter
+    app.get('/', (req, res) => {
+      requestCounter.inc({ method: req.method, status: res.statusCode });
+      res.send('Hello, world!');
+    });
+
+    app.listen(port, () => {
+      console.log(`Node.js app listening at http://localhost:${port}`);
+    });

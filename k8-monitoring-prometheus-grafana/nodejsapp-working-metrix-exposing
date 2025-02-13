@@ -1,0 +1,52 @@
+The Node.js ConfigMap in Kubernetes plays a key role in the deployment of the Node.js application. Let’s break down the relationship between the Node.js deployment and the Node.js ConfigMap and why the ConfigMap is used:
+
+1. Node.js Deployment (nodejs-deployment.yaml)
+This YAML defines the Kubernetes Deployment for the Node.js application. It specifies the container image, port configurations, and the command to start the app (in this case, running server.js using Node.js). The deployment is responsible for creating and managing Pods (which contain the Node.js app container).
+
+2. Node.js ConfigMap (nodejs-app-code-configmap.yaml)
+A ConfigMap is a Kubernetes object that stores configuration data in key-value pairs, allowing you to separate configuration settings from application code. It is useful when you want to manage non-sensitive configuration that might change frequently, without rebuilding or re-deploying your containers.
+
+In this case, the Node.js ConfigMap contains the actual Node.js application code (in this case, the server.js file that is executed inside the container). This is done to inject the application code into the container when it runs.
+
+How They Work Together:
+ConfigMap Usage in Node.js Deployment:
+
+In the nodejs-deployment.yaml, a volume is created from the ConfigMap (nodejs-app-code) and mounted into the container at /app. The server.js file (which contains the logic for exposing the /metrics endpoint) is stored in the ConfigMap.
+The Node.js container is configured to use the code from this volume. Instead of bundling the application code within the container image, it’s externalized in the ConfigMap. The container will read the file from the mounted ConfigMap at /app/server.js when it starts up.
+Why the ConfigMap is Used:
+
+Separation of Code and Configuration: Keeping the application code outside of the Docker image allows you to change the code without rebuilding and redeploying the entire container image. This provides flexibility to update code without changing the underlying container image.
+Centralized Management: The ConfigMap provides a centralized way to manage your Node.js application code for Kubernetes. You can easily update the code in the ConfigMap, and Kubernetes will update the Pods accordingly.
+Environment-Specific Configuration: If the application needs to behave differently in different environments (e.g., development, staging, production), you could use different ConfigMaps for each environment, making it easier to maintain and customize the application for each environment.
+Easier Updates: When the server.js code needs to be updated, you just update the ConfigMap, and the Kubernetes deployment will pick up the changes. This avoids having to rebuild and redeploy Docker images.
+Steps in Detail:
+The ConfigMap (nodejs-app-code-configmap.yaml) contains the application code (server.js).
+The Deployment (nodejs-deployment.yaml) uses this ConfigMap by creating a volume and mounting it into the container at /app.
+When the Pod starts, the container reads the code from /app/server.js and runs the Node.js application.
+The Node.js app exposes Prometheus metrics at /metrics.
+In Summary:
+The Node.js ConfigMap stores the application code (like server.js).
+The Node.js deployment references this ConfigMap to mount the code into the container.
+The ConfigMap allows easy updates to the application code without having to rebuild the container image, providing better flexibility and maintainability for application code updates.
+
+Where is the server.js File?
+In the Node.js ConfigMap (nodejs-app-code-configmap.yaml), we are defining the application code (like server.js) as data within the ConfigMap. This means the server.js file isn't part of the Docker image or container directly, but rather, it exists as configuration data in the Kubernetes system
+
+What Happens When the Pod Starts?
+ConfigMap Volume Mount: When the Pod starts, Kubernetes will take the server.js file from the ConfigMap (nodejs-app-code) and mount it at /app inside the container (as specified by mountPath: /app).
+
+Container Starts: The Node.js container starts up, and since the server.js file is mounted inside the container at /app/server.js, the container will run this file as the entry point of the application. The Node.js application, defined in server.js, will start and expose metrics at /metrics.
+
+How the Application Runs:
+The Node.js container has the server.js file available at the /app/server.js path (due to the mount from the ConfigMap).
+The Node.js process starts and executes this file (i.e., node /app/server.js), which starts the Express server and exposes the /metrics endpoint.
+This way, even though the server.js is stored in a ConfigMap and not the container's image, it is still accessible to the container as if it were part of the container's filesystem.
+In Summary:
+The server.js file in this case is stored in the Kubernetes ConfigMap, and when the Pod starts, it mounts the ConfigMap as a volume into the container at /app. The Node.js application reads and runs the code from this path (/app/server.js) to start the server and expose the /metrics endpoint. This approach allows you to easily update the application code without needing to rebuild or redeploy the container image.
+
+
+
+
+
+
+

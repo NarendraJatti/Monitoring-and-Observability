@@ -112,3 +112,43 @@ The ServiceMonitor CRD allows users to define which services should be monitored
 
 
 Prometheus can alert on the state of Kubernetes resources by querying the Kubernetes API for resource conditions or events. For example, Prometheus can monitor pod restarts, node status, or pending deployments by accessing data exposed by the Kubernetes API and sending alerts based on this information.
+
+important:
+A ServiceMonitor is a Custom Resource Definition (CRD) in Prometheus Operator that allows you to configure how Prometheus discovers and scrapes services in Kubernetes. It simplifies the process of monitoring Kubernetes services by enabling Prometheus to automatically find and scrape the services based on labels without manually adding scrape configurations.
+Workflow:
+Create a ServiceMonitor CRD: Define the ServiceMonitor resource in Kubernetes.
+Prometheus Operator watches: The Prometheus Operator watches for changes to ServiceMonitor objects.
+Prometheus automatically scrapes: The Operator automatically adds matching services to Prometheus’ scrape configuration based on the ServiceMonitor specificatio
+In Kubernetes, services (and pods) are usually labeled with metadata (e.g., app=my-app, tier=backend). These labels are flexible and can be used to organize and filter resources.
+Label matching: In the ServiceMonitor, you specify which labels to look for (like app=my-app). Prometheus uses these labels to match the relevant services. For example, Prometheus will automatically scrape any service that has the label app=my-app without you having to manually list each service.
+Normally, in Prometheus, you would define a scrape configuration manually, telling Prometheus which targets to scrape (e.g., specific IPs, ports, paths, etc.). This would require constant updates if services change or new services are added.
+With ServiceMonitor, you don’t need to manually configure each service in Prometheus. By simply defining the ServiceMonitor with the right label selectors and endpoints, Prometheus will know which services to scrape based on the labels that match
+
+
+The Kubernetes API server serves as a source of information about the state of the cluster, providing details about the nodes, pods, services, and events.
+For Kubernetes, Prometheus uses the Kubernetes service discovery mechanism by querying the Kubernetes API server to find and monitor running pods, services, nodes, or endpoints that expose metrics.
+This is done using kubernetes_sd_configs (Kubernetes service discovery configurations) in the Prometheus configuration file (prometheus.yml).
+
+In the Prometheus configuration (prometheus.yml), you can specify a role of pod under the kubernetes_sd_configs section. This tells Prometheus to look for and scrape metrics from all the pods in the cluster.
+
+important
+===========
+Example Use Case: Scraping Metrics from a Node.js or Python Application
+Suppose you have a Node.js or Python application running inside a pod, and this application exposes metrics at the /metrics endpoint (using a library like prom-client in Node.js or prometheus_client in Python).
+
+These applications typically expose metrics related to:
+Request counts
+Response times (latency)
+Error rates
+Resource usage (CPU, memory)
+
+
+How Does Pod Discovery Handle Changes:
+Pod Lifecycle: If a pod is rescheduled or restarted, Prometheus will notice the change, discover the new pod, and begin scraping it.
+Scaling Applications: When applications scale (e.g., more replicas are added), Prometheus automatically discovers the new pods and starts scraping them
+
+
+important:
+=========
+How Prometheus Scrapes Metrics from Nginx:
+Expose Nginx Metrics: Nginx does not expose Prometheus metrics natively out of the box. To expose Nginx metrics, you'll need to set up an exporter (typically the nginx-prometheus-exporter) that converts Nginx's internal statistics into a format that Prometheus can scrape.

@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s  # Scrape metrics every 15 seconds
+
+scrape_configs:
+  # Nginx exporter
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+
+  # Node.js application
+  - job_name: 'nodejs'
+    static_configs:
+      - targets: ['nodejs-app:8080']

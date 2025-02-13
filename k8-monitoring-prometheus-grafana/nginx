@@ -1,0 +1,41 @@
+Run the Nginx Prometheus Exporter: You would typically run the nginx-prometheus-exporter container alongside your Nginx container or on a separate pod.
+
+docker run -d -p 9113:9113 --name nginx-prometheus-exporter \
+  -e NGINX_STATUS_URL=http://nginx:8080/nginx_status \
+  quay.io/prometheus/nginx-prometheus-exporter
+
+The exporter fetches the data from http://nginx:8080/nginx_status and exposes it at http://<nginx_exporter_host>:9113/metrics
+
+In your Prometheus configuration (prometheus.yml), you would set up a scrape configuration for the Nginx exporter:
+scrape_configs:
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+      This tells Prometheus to scrape metrics from the nginx-exporter at the /metrics endpoint.
+
+
+
+Key Differences:
+Nginx:
+
+Nginx doesn't expose Prometheus metrics natively.
+You need to use an exporter to expose metrics in the Prometheus format.
+Prometheus scrapes the exporter at /metrics.
+Custom Applications (Node.js, Python):
+
+Applications expose metrics at /metrics natively (using libraries like prom-client or prometheus_client).
+Prometheus scrapes the app directly at /metrics.
+
+How the Nginx Exporter Works
+The Nginx Prometheus exporter does the following:
+
+Scrapes Nginx's internal stats: It connects to Nginx’s stub_status endpoint, which exposes basic metrics like active connections, requests handled, etc. You need to configure Nginx to expose this data.
+
+Converts the data into Prometheus format: The exporter takes the data from Nginx and formats it into a time-series data format that Prometheus can scrape and store.
+
+Exposes a /metrics endpoint: The exporter runs as an HTTP server that exposes metrics at /metrics. This is where Prometheus will scrape the data.
+
+Flow of Metrics Scraping
+Nginx Prometheus Exporter connects to the stub_status page (/nginx_status) exposed by Nginx to collect the metrics.
+The exporter then exposes these metrics at the /metrics endpoint in a Prometheus-compatible format.
+Prometheus scrapes the /metrics endpoint of the exporter (e.g., nginx-exporter:9113/metrics) at the specified scrape interval and stores the metrics as time series data.
