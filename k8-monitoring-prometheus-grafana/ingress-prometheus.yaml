@@ -1,0 +1,45 @@
+  Internet  -->  Ingress  -->  Prometheus Service (prometheus-operated)  -->  Prometheus (/metrics, UI, etc.)
+prometheus-operated service is created automatically when you install Prometheus via the Prometheus Operator or through certain Helm charts. This service is responsible for exposing Prometheus metrics within the Kubernetes cluster. Let's break down how this works
+
+Prometheus Pod Deployment:
+
+When you install Prometheus using the Operator or a Helm chart, a Pod is created that runs the Prometheus server. This pod listens on port 9090 for requests to the /metrics and other Prometheus endpoints.
+The Prometheus pod exposes its API (for metrics scraping, querying, alerts, etc.) on port 9090.
+Prometheus Service (e.g., prometheus-operated):
+
+To make the Prometheus pod accessible within the Kubernetes cluster, a Service is created (typically a ClusterIP service). This service acts as an abstraction layer and routes traffic to the Prometheus pod.
+The service typically listens on port 9090 and forwards traffic to the Prometheus pod's port.
+Any component inside the Kubernetes cluster (e.g., Grafana, Alertmanager, custom metrics scrapers) can send HTTP requests to this service to access Prometheus.
+ternally, any other Kubernetes service or pod can reach Prometheus by sending HTTP requests to http://prometheus-operated.monitoring:9090/metrics.
+This prometheus-operated service exposes all the available Prometheus endpoints, such as:
+/metrics – exposes Prometheus' own internal metrics.
+/graph – provides access to Prometheus' graphical interface.
+/api/v1/query – allows querying Prometheus using the Prometheus Query Language (PromQL).
+
+=============
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring # Namespace where Prometheus is installed
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+    - host: prometheus.yourdomain.com # Replace with your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-operated # Prometheus service name
+                port:
+                  number: 9090
+  tls:
+    - hosts:
+        - prometheus.yourdomain.com
+      secretName: prometheus-tls-secret # TLS secret for HTTPS
+
+

@@ -1,3 +1,8 @@
+The default ports for Prometheus and Grafana are:
+
+Prometheus: Port 9090
+Grafana: Port 3000
+
 Monitoring:
 Monitoring involves collecting and analyzing data from your systems (like CPU usage, memory usage, network traffic, etc.) to detect and alert on predefined conditions or thresholds. It helps you know when something is wrong with your system.
 In DevOps, monitoring focuses on:
@@ -152,3 +157,30 @@ important:
 =========
 How Prometheus Scrapes Metrics from Nginx:
 Expose Nginx Metrics: Nginx does not expose Prometheus metrics natively out of the box. To expose Nginx metrics, you'll need to set up an exporter (typically the nginx-prometheus-exporter) that converts Nginx's internal statistics into a format that Prometheus can scrape.
+
+
+Prometheus Operator provides Kubernetes-native management for Prometheus. It offers deeper integration with Kubernetes, automating tasks like upgrades, configuration changes, and scaling.
+elm makes it relatively easy to upgrade Prometheus, but you need to manage the lifecycle (upgrades, backups, and downgrades) manually.
+
+
+The kube-state-metrics controller is a component used to generate metrics about the state of Kubernetes objects. It acts as a monitoring tool that listens to the Kubernetes API and translates the state of various objects into Prometheus metrics. These metrics can then be scraped by Prometheus for monitoring and alerting purposes.
+Kube-state-metrics focuses on the state of Kubernetes resources (e.g., Deployments, Pods, Nodes, etc.), rather than the internal performance metrics (like CPU or memory usage) that you would typically get from tools like cAdvisor.
+For example, Kube State Metrics can expose:
+
+Number of Pods in the Running state.
+Number of replicas desired vs. available in a Deployment.
+The state of Jobs, DaemonSets, and PersistentVolumeClaims
+
+Expose Custom Metrics from Your Application:
+Your application must expose metrics on an HTTP endpoint, typically in a format Prometheus understands (usually /metrics). You can use client libraries in various programming languages to expose these metrics. For example:
+
+Node.js: Use the prom-client library.
+Python: Use the prometheus_client library.
+Go: Use the prometheus Go client.
+
+To collect custom metrics per pod in Kubernetes, you can use a ServiceMonitor or PodMonitor if you are using Prometheus Operator for Kubernetes. These resources tell Prometheus to automatically scrape metrics from the pods in your cluster.
+
+Kube State Metrics exposes built-in Kubernetes resource states, including pod states like Running, Pending, Failed, etc.
+To expose custom metrics for your application, you need to modify the app to expose metrics and configure Prometheus to scrape those metrics.
+
+The Prometheus Operator continuously watches for changes to these custom resources (ServiceMonitor and PodMonitor) and automatically updates the scrape configuration for Prometheus. This makes it easier to scale monitoring as new services and pods are added.
